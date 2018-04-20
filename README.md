@@ -14,4 +14,5 @@ $ sh run.sh
 
 This script will compile and power up an HTTP server via Python cli.
 
-
+# Bibleography:
+1. https://hacks.mozilla.org/2018/03/making-webassembly-better-for-rust-for-all-languages/
