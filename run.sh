@@ -11,3 +11,4 @@ cp distil.gc.wasm web/distil.wasm
 echo "Powering up a HTTP server"
 cd web
 python -m SimpleHTTPServer 8000
+echo "Open http://localhost:8000";

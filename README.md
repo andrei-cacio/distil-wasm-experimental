@@ -1,5 +1,5 @@
 # distil-wasm
-A WebAssembly version of Elliot Jackson's library called [distil](https://github.com/elliotekj/distil)
+A WebAssembly version of [Elliot Jackson](https://github.com/elliotekj)'s library called [distil](https://github.com/elliotekj/distil)
 
 # Development
 
