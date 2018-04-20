@@ -14,5 +14,6 @@ $ sh run.sh
 
 This script will compile and power up an HTTP server via Python cli.
 
-# Bibleography:
+# Bibliography
 1. https://hacks.mozilla.org/2018/03/making-webassembly-better-for-rust-for-all-languages/
+2. https://rust-lang-nursery.github.io/rust-wasm/
