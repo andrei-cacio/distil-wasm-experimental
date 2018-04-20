@@ -1,0 +1,9 @@
+[package]
+name = "distil"
+version = "0.1.0"
+authors = ["andrei-cacio <contact@andreicacio.com>"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
