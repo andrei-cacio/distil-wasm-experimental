@@ -1,12 +1,7 @@
-rm -rf target
-rm distil.gc.wasm
-
 echo "Compiling binaries....";
-cargo +nightly build --target wasm32-unknown-unknown --release
-wasm-gc target/wasm32-unknown-unknown/release/distil.wasm -o distil.gc.wasm
+rustc --target=wasm32-unknown-emscripten src/lib.rs -o web/index.html
 
-echo "Copying wasm to web"
-cp distil.gc.wasm web/distil.wasm
+cp index.html web/
 
 echo "Powering up a HTTP server"
 cd web

@@ -1,0 +1,25 @@
+{
+  "name": "distil-wasm",
+  "version": "1.0.0",
+  "description": "A WebAssembly version of [Elliot Jackson](https://github.com/elliotekj)'s library called [distil](https://github.com/elliotekj/distil)",
+  "main": "index.js",
+  "scripts": {
+    "serve": "webpack-dev-server --content-base web",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrei-cacio/distil-wasm.git"
+  },
+  "author": "Andrei Cacio",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/andrei-cacio/distil-wasm/issues"
+  },
+  "homepage": "https://github.com/andrei-cacio/distil-wasm#readme",
+  "devDependencies": {
+    "webpack": "^4.0.1",
+    "webpack-cli": "^2.0.10",
+    "webpack-dev-server": "^3.1.0"
+  }
+}
