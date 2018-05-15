@@ -1,7 +1,9 @@
 rm -rf target
-rm web/distil.js
 rm web/*.wasm
 
 echo "Compiling binaries....";
-rustc --target=wasm32-unknown-emscripten src/lib.rs -o web/index.html
+cargo +nightly build --target wasm32-unknown-unknown --release
+wasm-gc target/wasm32-unknown-unknown/release/distil_wasm.wasm -o web/distil_wasm.gc.wasm
+
+cp index.html web/
 

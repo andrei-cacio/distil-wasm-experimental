@@ -42,16 +42,73 @@ function structToObj(ptr) {
 	}
 }
 
-function loadImgIntoMem(img) {
+function loadImgIntoMemEmscripten(img) {
 	return new Promise(resolve => {
 		fetch(img)
 			.then(r => r.arrayBuffer())
 			.then(buff => {
-				const imgUi8buff = new Uint8Array(buff, 0, buff.byteLength);
-				Module.HEAPU8.set(imgUi8buff, 3000);
-				resolve({ ptr: 3000, size: buff.byteLength, imgUi8buff });
+				const imgPtr = Module._malloc(buff.byteLength);
+				const imgHeap = new Uint8Array(Module.HEAPU8.buffer, imgPtr, buff.byteLength);
+
+				imgHeap.set(new Uint8Array(buff));
+
+				resolve({ imgPtr });
 			});
 	});
+}
+
+function loadImgIntoMem(img, memory, alloc) {
+	return new Promise(resolve => {
+		fetch(img)
+			.then(r => r.arrayBuffer())
+			.then(buff => {
+				const imgPtr = alloc(buff.byteLength);
+				const imgHeap = new Uint8Array(memory.buffer, imgPtr, buff.byteLength);
+				
+				imgHeap.set(new Uint8Array(buff));
+
+				resolve({ imgPtr, len: buff.byteLength });
+			});
+	});
+}
+
+function run(img) {
+	return compile().then(m => {
+		return loadImgIntoMem(img, m.instance.exports.memory, m.instance.exports.alloc).then(r => {
+			return m.instance.exports.read_img(r.imgPtr, r.len);
+		});
+	});
+}
+
+function compile(wasmFile = 'distil_wasm.gc.wasm') {
+	return fetch(wasmFile)
+        .then(r => r.arrayBuffer())
+        .then(r => {
+        	let module = new WebAssembly.Module(r);
+        	let importObject = {}
+        	for (let imp of WebAssembly.Module.imports(module)) {
+        	    if (typeof importObject[imp.module] === "undefined")
+        	        importObject[imp.module] = {};
+        	    switch (imp.kind) {
+        	    case "function": importObject[imp.module][imp.name] = () => {}; break;
+        	    case "table": importObject[imp.module][imp.name] = new WebAssembly.Table({ initial: 256, maximum: 256, element: "anyfunc" }); break;
+        	    case "memory": importObject[imp.module][imp.name] = new WebAssembly.Memory({ initial: 256 }); break;
+        	    case "global": importObject[imp.module][imp.name] = 0; break;
+        	    }
+        	}
+        	
+        	return WebAssembly.instantiate(r, importObject);
+        });
+}
+
+function loadU8ArrToMem(arr) {
+	var u8 = new Uint8Array(arr)
+	var arrPtr = Module._malloc(u8.length)
+	var arrHeap = new Uint8Array(Module.HEAPU8.buffer, arrPtr, u8.length)
+
+	arrHeap.set(new Uint8Array(u8.buffer));
+
+	return arrPtr;
 }
 
 

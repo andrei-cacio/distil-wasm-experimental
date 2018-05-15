@@ -16,3 +16,5 @@ node_modules
 *.asm.js
 
 web/index.js
+
+*.log
