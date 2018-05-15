@@ -18,3 +18,4 @@ This script will compile and power up an HTTP server via Python cli.
 1. https://hacks.mozilla.org/2018/03/making-webassembly-better-for-rust-for-all-languages/
 2. https://rust-lang-nursery.github.io/rust-wasm/
 3. https://hacks.mozilla.org/2018/04/javascript-to-rust-and-back-again-a-wasm-bindgen-tale/
+4. https://www.hellorust.com/
