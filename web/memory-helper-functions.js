@@ -13,9 +13,11 @@ function printIntArr(ptr, size) {
 	Helper function for printing arrays of integers
 */
 function ptrToStr(ptr, size) {
+	const HEAP8 = new Int8Array(Module.instance.exports.memory.buffer);
+
 	let str = '';
 	for (let i = ptr; i < ptr + size; i++) {
-		str += String.fromCharCode(Module.HEAP8[i]);
+		str += String.fromCharCode(HEAP8[i]);
 	}
 
 	return str;
@@ -74,6 +76,9 @@ function loadImgIntoMem(img, memory, alloc) {
 
 function run(img) {
 	return compile().then(m => {
+		window.Module = m;
+		window.Module.HEAP8 = new Int8Array(Module.instance.exports.memory.buffer);
+		
 		return loadImgIntoMem(img, m.instance.exports.memory, m.instance.exports.alloc).then(r => {
 			return m.instance.exports.read_img(r.imgPtr, r.len);
 		});
@@ -97,6 +102,10 @@ function compile(wasmFile = 'distil_wasm.gc.wasm') {
         	    }
         	}
         	
+        	importObject.env = Object.assign({}, importObject.env, {
+        		log: (ptr, len) => console.log(ptrToStr(ptr, len))
+        	});
+
         	return WebAssembly.instantiate(r, importObject);
         });
 }

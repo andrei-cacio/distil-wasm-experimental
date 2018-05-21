@@ -7,4 +7,13 @@ authors = ["andrei-cacio <contact@andreicacio.com>"]
 crate-type = ["cdylib"]
 
 [dependencies]
-image = "0.13.0"
+color_quant = "1.0.0"
+delta_e = "0.1.0"
+itertools = "0.6.0"
+lab = "0.4.2"
+quick-error = "1.2.0"
+
+[dependencies.image]
+version = "0.13.0"
+default-features = false
+features = ["png_codec", "tga"]
