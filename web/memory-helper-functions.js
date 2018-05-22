@@ -74,14 +74,41 @@ function loadImgIntoMem(img, memory, alloc) {
 	});
 }
 
-function run(img) {
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function rgbArrToHex(arr) {
+	document.querySelectorAll('.sample').forEach(i => document.body.removeChild(i));
+	for (let i = 0; i < arr.length; i+=3) {
+		const color = rgbToHex(arr[i], arr[i+1], arr[i+2]);
+
+		const div = document.createElement('div');
+		div.className = 'sample';
+		div.style.backgroundColor = color;
+
+		document.body.appendChild(div);
+	}
+}
+
+function run(img, size) {
 	return compile().then(m => {
 		window.Module = m;
 		window.Module.HEAP8 = new Int8Array(Module.instance.exports.memory.buffer);
 		
 		return loadImgIntoMem(img, m.instance.exports.memory, m.instance.exports.alloc).then(r => {
-			return m.instance.exports.read_img(r.imgPtr, r.len);
+			return m.instance.exports.read_img(r.imgPtr, r.len, size);
 		});
+	})
+	.then(ptr => {
+		window.ptr = ptr;
+		const heap = new Uint8Array(Module.instance.exports.memory.buffer, ptr, size * 3);
+		rgbArrToHex([...heap]);
 	});
 }
 
@@ -103,7 +130,8 @@ function compile(wasmFile = 'distil_wasm.gc.wasm') {
         	}
         	
         	importObject.env = Object.assign({}, importObject.env, {
-        		log: (ptr, len) => console.log(ptrToStr(ptr, len))
+        		log: (ptr, len) => console.log(ptrToStr(ptr, len)),
+        		log_nr: (nr) => console.log(nr),
         	});
 
         	return WebAssembly.instantiate(r, importObject);

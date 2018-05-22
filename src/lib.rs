@@ -31,6 +31,7 @@ static MIN_DISTANCE_FOR_UNIQUENESS: f32 = 10.0;
 
 extern {
     fn log(s: &str, len: usize);
+    fn log_nr(nr: usize);
 }
 
 quick_error! {
@@ -71,59 +72,10 @@ pub struct Distil {
 }
 
 impl Distil {
-    /// `from_path_str` takes a path to an image which exists locally on the
-    /// system and `Distil`s it.
-    ///
-    /// ## Example
-    ///
-    /// ```
-    /// use distil::Distil;
-    ///
-    /// let path_str = "/Users/elliot/dev/distil/images/img-1.jpg";
-    ///
-    /// if let Ok(distilled) = Distil::from_path_str(path_str) {
-    ///     // Do something with the returned `Distil` struct…
-    /// }
-    /// ```
-    pub fn from_path_str(path_str: &str) -> Result<Distil, DistilError> {
-        let path = Path::new(&path_str);
-        Distil::from_path(&path)
-    }
-
-    /// `from_path` takes a `&Path` to an image which exists locally on the
-    /// system and `Distil`s it.
-    ///
-    /// ## Example
-    ///
-    /// ```
-    /// use std::path::Path;
-    /// use distil::Distil;
-    ///
-    /// let path = Path::new("/Users/elliot/dev/distil/images/img-1.jpg");
-    ///
-    /// if let Ok(distilled) = Distil::from_path(&path) {
-    ///     // Do something with the returned `Distil` struct…
-    /// }
-    /// ```
-    pub fn from_path(path: &Path) -> Result<Distil, DistilError> {
-        let image_format = get_image_format(&path)?;
-
-        is_supported_format(image_format)?;
-
-        match image::open(path) {
-            Ok(img) => return Distil::new(img),
-            Err(err) => {
-                unsafe { log(&err.to_string(), err.to_string().len()); }
-
-                return Err(DistilError::Io(format!("{:?}", path), err))
-            },
-        }
-    }
-
     fn new(img: DynamicImage) -> Result<Distil, DistilError> {
-        let scaled_img = scale_img(img);
+        // let scaled_img = scale_img(img);
 
-        match quantize(scaled_img) {
+        match quantize(img) {
             Ok(quantized_img) => {
                 let color_count = count_colors_as_lab(quantized_img);
                 let palette = remove_similar_colors(color_count);
@@ -347,13 +299,25 @@ pub extern "C" fn alloc(size: usize) -> *mut c_void {
 	return ptr as *mut c_void;
 }
 
-fn process_img(img: DynamicImage) -> *mut i32 {
+fn process_img(img: DynamicImage, palette_size: usize) -> *mut i32 {
     let err = Box::new([500]);
     match Distil::new(img) {
         Ok(distil) => {
-            let colors = Box::new(distil.colors);
+            let mut colors = Vec::new();
+            
+            for (i, color) in distil.colors.iter().enumerate() {
 
-            Box::into_raw(colors) as *mut i32
+                colors.push(color);
+
+                if i == palette_size as usize -1 {
+                    break;
+                }
+            }
+
+            let res = Box::new(colors);
+            unsafe { log_nr(distil.colors.len()); }
+
+            return Box::into_raw(res) as *mut i32;
         },
         Err(err) => {
             let err_msg: String = err.to_string().to_owned();
@@ -369,12 +333,12 @@ fn process_img(img: DynamicImage) -> *mut i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn read_img(buff_ptr: *mut u8, buff_len: usize) -> *mut i32 {
+pub extern "C" fn read_img(buff_ptr: *mut u8, buff_len: usize, palette_size: usize) -> *mut i32 {
 	let mut img: Vec<u8> = unsafe { Vec::from_raw_parts(buff_ptr, buff_len, buff_len) };
     let err = Box::new([500]);
 
     return match image::load_from_memory(&img) {
-        Ok(img) => process_img(img),
+        Ok(img) => process_img(img, palette_size),
         Err(err) => {
             let err_msg: String = err.to_string().to_owned();
             let mut ns: String = "[load_from_memory] ".to_owned();
