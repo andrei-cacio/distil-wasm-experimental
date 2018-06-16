@@ -16,7 +16,7 @@ use std::os::raw::c_void;
 
 use color_quant::NeuQuant;
 use delta_e::DE2000;
-use image::FilterType::Gaussian;
+use image::FilterType::Triangle;
 use image::{DynamicImage, GenericImage, guess_format, load_from_memory, ImageBuffer, ImageFormat, imageops, Pixel,
             Rgb, Rgba};
 use itertools::Itertools;
@@ -73,9 +73,9 @@ pub struct Distil {
 
 impl Distil {
     fn new(img: DynamicImage) -> Result<Distil, DistilError> {
-        // let scaled_img = scale_img(img);
+        let scaled_img = scale_img(img);
 
-        match quantize(img) {
+        match quantize(scaled_img) {
             Ok(quantized_img) => {
                 let color_count = count_colors_as_lab(quantized_img);
                 let palette = remove_similar_colors(color_count);
@@ -126,7 +126,7 @@ fn scale_img(mut img: DynamicImage) -> DynamicImage {
 
         let scaled_width = (ratio * (MAX_SAMPLE_COUNT as f32)).sqrt() as u32;
 
-        img = img.resize(scaled_width, height as u32, Gaussian);
+       return img.resize(scaled_width, height as u32, Triangle);
     }
 
     img
@@ -300,7 +300,6 @@ pub extern "C" fn alloc(size: usize) -> *mut c_void {
 }
 
 fn process_img(img: DynamicImage, palette_size: usize) -> *mut i32 {
-    let err = Box::new([500]);
     match Distil::new(img) {
         Ok(distil) => {
             let mut colors = Vec::new();
@@ -314,8 +313,10 @@ fn process_img(img: DynamicImage, palette_size: usize) -> *mut i32 {
                 }
             }
 
+            let colors_len = colors.len();
             let res = Box::new(colors);
             unsafe { log_nr(distil.colors.len()); }
+            unsafe { log_nr(colors_len); }
 
             return Box::into_raw(res) as *mut i32;
         },
@@ -335,7 +336,6 @@ fn process_img(img: DynamicImage, palette_size: usize) -> *mut i32 {
 #[no_mangle]
 pub extern "C" fn read_img(buff_ptr: *mut u8, buff_len: usize, palette_size: usize) -> *mut i32 {
 	let mut img: Vec<u8> = unsafe { Vec::from_raw_parts(buff_ptr, buff_len, buff_len) };
-    let err = Box::new([500]);
 
     return match image::load_from_memory(&img) {
         Ok(img) => process_img(img, palette_size),

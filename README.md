@@ -1,6 +1,17 @@
 # distil-wasm
 A WebAssembly version of [Elliot Jackson](https://github.com/elliotekj)'s library called [distil](https://github.com/elliotekj/distil)
 
+# Temporarily abandoned
+
+I managed to render the results from the rust library. However, I cannot figure out why I am getting only black palettes, no matter what image I feed the algorithm.
+
+Here is the unanswered Stackoverflow question: [color_quant::NeuQuant compiled to WebAssembly outputs zero values
+](https://stackoverflow.com/questions/50553014/color-quantneuquant-compiled-to-webassembly-outputs-zero-values)
+
+# Things I have learned threw the process
+
+All the notes and references which resulted from this project can be found here: [learning-web-assembly](https://github.com/andrei-cacio/learning-web-assembly)
+
 # Development
 
 To setup a rust environment with WebAssembly superpowers I used this wonderful resource right [here](https://rust-lang-nursery.github.io/rust-wasm/setup.html).

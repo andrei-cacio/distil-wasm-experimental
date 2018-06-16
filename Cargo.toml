@@ -16,4 +16,4 @@ quick-error = "1.2.0"
 [dependencies.image]
 version = "0.13.0"
 default-features = false
-features = ["png_codec", "tga"]
+features = ["png_codec", "tga", "jpeg"]

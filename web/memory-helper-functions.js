@@ -23,6 +23,11 @@ function ptrToStr(ptr, size) {
 	return str;
 }
 
+function initHeaps() {
+	window.heap16 = new Uint32Array(Module.instance.exports.memory.buffer);
+	window.heap8 = new Uint8Array(Module.instance.exports.memory.buffer);
+}
+
 function printPoint(ptr) {
 	let pointAPtr = ptr >> 2;
 	let pointBPtr = pointAPtr + 1;
@@ -96,6 +101,10 @@ function rgbArrToHex(arr) {
 	}
 }
 
+function ptrToRGB(ptr) {
+	return [...new Uint8Array(Module.instance.exports.memory.buffer, ptr, 3)];
+}
+
 function run(img, size) {
 	return compile().then(m => {
 		window.Module = m;
@@ -107,8 +116,11 @@ function run(img, size) {
 	})
 	.then(ptr => {
 		window.ptr = ptr;
-		const heap = new Uint8Array(Module.instance.exports.memory.buffer, ptr, size * 3);
-		rgbArrToHex([...heap]);
+		const HEAP16 = new Uint32Array(Module.instance.exports.memory.buffer);
+		const colorsPtr = new Uint32Array(Module.instance.exports.memory.buffer, ptr, size * 3);
+		const pixel1Ptr = HEAP16[colorsPtr / Uint32Array.BYTES_PER_ELEMENT];
+
+		rgbArrToHex(ptrToRGB(pixel1Ptr));
 	});
 }
 
